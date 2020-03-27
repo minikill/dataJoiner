@@ -11,12 +11,18 @@ import java.time.Duration
 import org.apache.kafka.common.serialization.Serdes
 import pureconfig.generic.auto._
 
+/**
+ * The object for joining hotels and weather data into target topic
+ * Join by key: geohash + dateTime
+ */
+
 object ApplicationStart extends App {
 
   val LOG = Logger.getLogger(this.getClass.getName)
 
   val conf = ConfigSource.default.loadOrThrow[Config]
 
+  // Properties for kafka
   val props = new Properties
   props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, conf.kafkaConfig.applicationId)
   props.setProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, conf.kafkaConfig.bootstrapServers.mkString(","))
@@ -28,9 +34,11 @@ object ApplicationStart extends App {
 
   val builder = new StreamsBuilder
 
+  // Introducing source streams
   val weatherStream: KStream[String, String] = builder.stream(conf.kafkaConfig.weatherTopic)
   val hotelsStream: KStream[String, String] = builder.stream(conf.kafkaConfig.hotelsTopic)
 
+  // Join processing
   val weatheredHotelsStream = weatherStream.join(
     hotelsStream,
     new ValueJoiner[String, String, String] {
@@ -44,6 +52,7 @@ object ApplicationStart extends App {
     Produced.`with`(Serdes.String(), Serdes.String())
   )
 
+  // Streaming start
   val streams = new KafkaStreams(builder.build, props)
   streams.start()
 

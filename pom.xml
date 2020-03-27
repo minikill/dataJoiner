@@ -28,10 +28,16 @@
             <version>${gson-version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams</artifactId>
+            <version>${kafka-version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.github.pureconfig</groupId>
             <artifactId>pureconfig_2.13</artifactId>
             <version>${pureconfig-version}</version>
         </dependency>
+<!--Logging dependencies-->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -42,11 +48,7 @@
             <artifactId>kafka-log4j-appender</artifactId>
             <version>${kafka-version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-streams</artifactId>
-            <version>${kafka-version}</version>
-        </dependency>
+<!--/Logging dependencies-->
     </dependencies>
 
     <build>
