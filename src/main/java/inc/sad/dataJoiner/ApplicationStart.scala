@@ -5,10 +5,12 @@ import java.util.Properties
 import org.apache.log4j.Logger
 import inc.sad.dataJoiner.Config
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.streams.kstream.{JoinWindows, KStream, StreamJoined, ValueJoiner}
+import org.apache.kafka.streams.kstream.{JoinWindows, KStream, Produced, StreamJoined, ValueJoiner}
 import org.apache.kafka.streams.{KafkaStreams, KeyValue, StreamsBuilder, StreamsConfig}
 import pureconfig.ConfigSource
 import java.time.Duration
+
+import org.apache.kafka.common.serialization.Serdes
 import pureconfig.generic.auto._
 
 object ApplicationStart extends App {
@@ -21,6 +23,8 @@ object ApplicationStart extends App {
   props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, conf.kafkaConfig.applicationId)
   props.setProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, conf.kafkaConfig.bootstrapServers.mkString(","))
   props.setProperty(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, conf.kafkaConfig.commitInterval)
+  props.setProperty(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName())
+  props.setProperty(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName())
   props.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, conf.kafkaConfig.autoOffsetReset)
   props.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, conf.kafkaConfig.maxPoolRecords)
 
@@ -32,9 +36,14 @@ object ApplicationStart extends App {
   val weatheredHotelsStream = weatherStream.join(
     hotelsStream,
     new ValueJoiner[String, String, String] {
-      override def apply(left: String, right: String): String = {left + "," + right}
+      override def apply(weather: String, hotel: String): String = {
+        hotel + "," + weather
+      }
     },
-    JoinWindows.of(Duration.ofSeconds(5))
+    JoinWindows.of(Duration.ofDays(365))
+  )
+  .to(conf.kafkaConfig.outputTopic,
+    Produced.`with`(Serdes.String(), Serdes.String())
   )
 
   val streams = new KafkaStreams(builder.build, props)
