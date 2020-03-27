@@ -4,8 +4,9 @@ case class Config(applicationConfig: ApplicationConfig, kafkaConfig: KafkaConfig
 
 case class ApplicationConfig(consumerPoolSize: Int)
 
-case class KafkaConfig(sourceTopic: String,
-                       targetTopic: String,
+case class KafkaConfig(weatherTopic: String,
+                       hotelsTopic: String,
+                       outputTopic: String,
                        applicationId: String,
                        commitInterval: String,
                        autoOffsetReset: String,

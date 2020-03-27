@@ -1,12 +1,13 @@
 import java.util.Properties
-import org.apache.log4j.Logger
 
+import org.apache.log4j.Logger
 import inc.sad.dataJoiner.Config
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.kstream.{Consumed, Produced}
-import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
+import org.apache.kafka.streams.kstream.{JoinWindows, KStream, StreamJoined, ValueJoiner}
+import org.apache.kafka.streams.{KafkaStreams, KeyValue, StreamsBuilder, StreamsConfig}
 import pureconfig.ConfigSource
+import java.time.Duration
+import pureconfig.generic.auto._
 
 object ApplicationStart extends App {
 
@@ -23,21 +24,16 @@ object ApplicationStart extends App {
 
   val builder = new StreamsBuilder
 
-  builder
-    .stream(conf.kafkaConfig.sourceTopic,
-      Consumed.`with`(Serdes.String(), Serdes.String())
-    )
-    .peek((key: String, value: String) => {
-      try {
-        LOG.info(value)
-      } catch {
-        case e: Exception =>
-          LOG.error(e)
-      }
-    })
-    .to(conf.kafkaConfig.targetTopic,
-      Produced.`with`(Serdes.String(), Serdes.String())
-    )
+  val weatherStream: KStream[String, String] = builder.stream(conf.kafkaConfig.weatherTopic)
+  val hotelsStream: KStream[String, String] = builder.stream(conf.kafkaConfig.hotelsTopic)
+
+  val weatheredHotelsStream = weatherStream.join(
+    hotelsStream,
+    new ValueJoiner[String, String, String] {
+      override def apply(left: String, right: String): String = {left + "," + right}
+    },
+    JoinWindows.of(Duration.ofSeconds(5))
+  )
 
   val streams = new KafkaStreams(builder.build, props)
   streams.start()
