@@ -3,13 +3,11 @@ package inc.sad.dataJoiner
 import java.util.Properties
 
 import org.apache.log4j.Logger
-import inc.sad.dataJoiner.Config
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.streams.kstream.{JoinWindows, KStream, Produced, StreamJoined, ValueJoiner}
-import org.apache.kafka.streams.{KafkaStreams, KeyValue, StreamsBuilder, StreamsConfig}
+import org.apache.kafka.streams.kstream.{JoinWindows, KStream, Produced, ValueJoiner}
+import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
 import pureconfig.ConfigSource
 import java.time.Duration
-
 import org.apache.kafka.common.serialization.Serdes
 import pureconfig.generic.auto._
 
@@ -37,10 +35,10 @@ object ApplicationStart extends App {
     hotelsStream,
     new ValueJoiner[String, String, String] {
       override def apply(weather: String, hotel: String): String = {
-        hotel + "," + weather
+        hotel.stripLineEnd + "," + weather
       }
     },
-    JoinWindows.of(Duration.ofDays(365))
+    JoinWindows.of(Duration.ofDays(1))
   )
   .to(conf.kafkaConfig.outputTopic,
     Produced.`with`(Serdes.String(), Serdes.String())
