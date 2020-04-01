@@ -4,7 +4,7 @@ package inc.sad.dataJoiner
  * A few case classes for pureConfig describing
  */
 
-case class Config(applicationConfig: ApplicationConfig, kafkaConfig: KafkaConfig)
+case class DataJoinerConfig(applicationConfig: ApplicationConfig, kafkaConfig: KafkaConfig)
 
 case class ApplicationConfig(consumerPoolSize: Int)
 

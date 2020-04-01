@@ -6,8 +6,9 @@ import org.apache.log4j.Logger
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.streams.kstream.{JoinWindows, KStream, Produced, ValueJoiner}
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
-import pureconfig.ConfigSource
 import java.time.Duration
+
+import com.typesafe.config.ConfigFactory
 import org.apache.kafka.common.serialization.Serdes
 import pureconfig.generic.auto._
 
@@ -20,7 +21,7 @@ object ApplicationStart extends App {
 
   val LOG = Logger.getLogger(this.getClass.getName)
 
-  val conf = ConfigSource.default.loadOrThrow[Config]
+  val conf = ConfigService.loadConfiguration(scala.util.Properties.envOrNone("DATAJOINER_CONFIG").get)
 
   // Properties for kafka
   val props = new Properties
