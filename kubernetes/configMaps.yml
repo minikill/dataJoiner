@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-joiner-jmx-configmap
+data:
+  jmx-prometheus.yml: |+
+    jmxUrl: service:jmx:rmi:///jndi/rmi://localhost:5555/jmxrmi
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    ssl: false
+    rules:
+      - pattern: ".*"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-joiner-configmap
+data:
+  joiner.conf: |+
+    application-config = {
+      geohash-precision = 5
+      consumer-pool-size = 5
+    }
+    kafka-config = {
+      weather-topic = "geoWeather"
+      hotels-topic = "hotels"
+      output-topic = "weatheredHotels"
+      application-id = "hotelsJoiner"
+      commit-interval = 100
+      auto-offset-reset ="earliest"
+      max-pool-records = 10
+      bootstrap-servers = ["localhost:9092"]
+    }

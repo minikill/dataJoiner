@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-joiner
+  labels:
+    app: data-joiner
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: data-joiner
+      labels:
+        app: data-joiner
+    spec:
+      volumes:
+        - name: jmx-config
+          configMap:
+            name: data-joiner-jmx-configmap
+        - name: joiner-config
+          configMap:
+            name: data-joiner-configmap
+      containers:
+        - name: data-joiner
+          image: data_joiner
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATAJOINER_CONFIG
+              value: /etc/data-joiner/joiner.conf
+          volumeMounts:
+            - name: joiner-config
+              mountPath: /etc/data-joiner
+        - name: prometheus-jmx-exporter
+          volumeMounts:
+            - name: jmx-config
+              mountPath: /etc/jmx-exporter
+          image: solsson/kafka-prometheus-jmx-exporter:latest
+          command:
+            - java
+            - -jar
+            - jmx_prometheus_httpserver.jar
+            - "5556"
+            - /etc/jmx-exporter/jmx-prometheus.yml
+          ports:
+            - containerPort: 5556
+              name: metrics
+      restartPolicy: Always
+  selector:
+    matchLabels:
+      app: data-joiner

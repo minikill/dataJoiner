@@ -1,0 +1,12 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: data-joiner-service-monitor
+  labels:
+    app: data-joiner
+spec:
+  selector:
+    matchLabels:
+      app: data-joiner
+  endpoints:
+    - port: metrics
