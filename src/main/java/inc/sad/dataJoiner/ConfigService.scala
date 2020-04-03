@@ -6,6 +6,12 @@ import java.nio.file.Path
 import javax.naming.ConfigurationException
 import pureconfig.ConfigSource
 
+/**
+ *
+ * Object for loading config files by purgeConfig
+ *
+ */
+
 object ConfigService {
 
   def loadConfiguration(configFilePath: String): DataJoinerConfig = {

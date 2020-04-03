@@ -21,6 +21,7 @@ object ApplicationStart extends App {
 
   val LOG = Logger.getLogger(this.getClass.getName)
 
+  // Config loading by path from environment variable
   val conf = ConfigService.loadConfiguration(scala.util.Properties.envOrNone("DATAJOINER_CONFIG").get)
 
   // Properties for kafka
